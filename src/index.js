@@ -1,15 +1,42 @@
 import Graph from "react-graph-vis";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+import axios from "axios"
+// import { InfluxDB } from "influx";
+const Influx = require('influx')
+const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
+
+
+// const Influx = require('influxdb-nodejs');
+// import {InfluxDB, FluxTableMetaData} from '@influxdata/influxdb-client'
+// import {url, token, org} from './env.mjs'
+
+
+// const express = require('express');
+// const app1 = express();
+
+// app1.get('/api', (req, res, next) => {
+//     const Influx = require('influxdb-nodejs');
+//     const client = new Influx('https://internal-metrics.solana.com:3000/');
+//     client.query('https')
+//     .where('type', '2')
+//     .then(data => res.json(data)
+//     .catch(err => next(err))); // error middleware to handle
+
+// }) 
+// app1.listen('3000', () => console.log('running on https://internal-metrics.solana.com:3000/'))
+// // eslint-disable-next-line
 
 const options = {
   layout: {
-    hierarchical: false
+    hierarchical: false 
   },
   edges: {
     color: "#000000"
   }
 };
+
+
 
 function randomColor() {
   const red = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
@@ -40,6 +67,43 @@ const App = () => {
       }
     });
   }
+
+  const client = new Influx.InfluxDB({
+    host: 'localhost',
+    database: 'my_db',
+    port: 8087,
+    username: 'read',
+    password: 'read',
+    schema: [
+      {
+        measurement: 'perf',
+        fields: {
+          results: Influx.FieldType.STRING,
+        },
+        tags: [
+          'localhost'
+        ]
+      }
+    ]
+  })
+
+  const fetchQuery = async () => {
+      const res = await influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)')
+      console.log(res);
+  }
+    // influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)').then(results => {
+    //     console.log(results);
+    // })
+
+//   const fetchTodos = async () => {
+//       const res = await axios.get('http://127.0.0.1:8080/api/dashboards/home');
+//       console.log(res);
+//   }
+
+  useEffect(() => {
+      fetchQuery()
+  }, []); //typically you'd put in a boolean. .
+
   const [state, setState] = useState({
     counter: 5,
     graph: {
