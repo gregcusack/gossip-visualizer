@@ -1,31 +1,12 @@
 import Graph from "react-graph-vis";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback, API } from "react";
 import ReactDOM from "react-dom";
 import axios from "axios"
 // import { InfluxDB } from "influx";
 const Influx = require('influx')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
+// const influx = new Influx.InfluxDB('http://gcusack:nZpypzlcGA@localhost:8080')
 
-
-// const Influx = require('influxdb-nodejs');
-// import {InfluxDB, FluxTableMetaData} from '@influxdata/influxdb-client'
-// import {url, token, org} from './env.mjs'
-
-
-// const express = require('express');
-// const app1 = express();
-
-// app1.get('/api', (req, res, next) => {
-//     const Influx = require('influxdb-nodejs');
-//     const client = new Influx('https://internal-metrics.solana.com:3000/');
-//     client.query('https')
-//     .where('type', '2')
-//     .then(data => res.json(data)
-//     .catch(err => next(err))); // error middleware to handle
-
-// }) 
-// app1.listen('3000', () => console.log('running on https://internal-metrics.solana.com:3000/'))
-// // eslint-disable-next-line
 
 const options = {
   layout: {
@@ -78,7 +59,8 @@ const App = () => {
       {
         measurement: 'perf',
         fields: {
-          results: Influx.FieldType.STRING,
+          time: Influx.FieldType.STRING,
+          gossip_listen_loop_iterations_since_last_report: Influx.FieldType.Float,
         },
         tags: [
           'localhost'
@@ -87,21 +69,65 @@ const App = () => {
     ]
   })
 
-  const fetchQuery = async () => {
-      const res = await influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)')
-      console.log(res);
-  }
-    // influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)').then(results => {
-    //     console.log(results);
-    // })
+//   const [isSending, setIsSending] = useState(false);
+//   const isMounted = useRef(true);
 
-//   const fetchTodos = async () => {
-//       const res = await axios.get('http://127.0.0.1:8080/api/dashboards/home');
-//       console.log(res);
-//   }
+  const pingInfluxHosts = async() => {
+      influx.ping(5000). then(hosts => {
+          hosts.forEach(host => {
+              if (host.online) {
+                console.log(`${host.url.host} responded in ${host.rtt}ms running ${host.version}`);
+              } else {
+                console.log(`${host.url.host} is offline :(`);
+              }
+          })
+      })
+  }
+
+//   const appendArray = ()
+
+  const fetchQuery = async () => {
+     influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
+        ).then(rawData => {
+            // console.log(rawData);
+            console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
+            // console.log(rawData[1]);
+            const id1 = rawData[0]["gossip_listen_loop_iterations_since_last_report"]
+            const color = randomColor();
+            const x = 100;
+            const y = 100;
+            setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+                const id = counter + 1;
+                const from = Math.floor(Math.random() * (counter - 1)) + 1;
+                return {
+                    graph: {
+                        nodes: [
+                            ...nodes,
+                            { id1, label: `Node ${id1}`, color, x, y }
+                        ],
+                        edges: [
+                            ...edges,
+                            { from, to: id1 }
+                        ]
+                    },
+                    counter: id1,
+                    ...rest
+                }
+            });
+        })
+    
+      
+      
+  }
 
   useEffect(() => {
+      const interval = setInterval(() => {
+        // pingInfluxHosts()
       fetchQuery()
+          console.log('running every 3 seconds!');
+      }, 3000);
+
+
   }, []); //typically you'd put in a boolean. .
 
   const [state, setState] = useState({
@@ -119,7 +145,7 @@ const App = () => {
         { from: 1, to: 3 },
         { from: 2, to: 4 },
         { from: 2, to: 5 },
-        { from: 5, to: 1 },
+        { from: 5, to: 3 },
       ]
     },
     events: {
@@ -138,6 +164,7 @@ const App = () => {
   const { graph, events } = state;
   return (
     <div>
+      {/* <input type="button" disabled={isSending} onClick={sendRequest} /> */}
       <h1>React graph vis</h1>
       <p>
         <a href="https://github.com/crubier/react-graph-vis">Github</a> -{" "}
