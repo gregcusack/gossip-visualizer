@@ -1,11 +1,8 @@
 import Graph from "react-graph-vis";
-import React, { useState, useEffect, useRef, useCallback, API } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import axios from "axios"
-// import { InfluxDB } from "influx";
 const Influx = require('influx')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
-// const influx = new Influx.InfluxDB('http://gcusack:nZpypzlcGA@localhost:8080')
 
 
 const options = {
@@ -31,6 +28,7 @@ const App = () => {
     const color = randomColor();
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
       const id = counter + 1;
+      console.log(x, y)
       const from = Math.floor(Math.random() * (counter - 1)) + 1;
       return {
         graph: {
@@ -48,6 +46,8 @@ const App = () => {
       }
     });
   }
+
+
 
   const client = new Influx.InfluxDB({
     host: 'localhost',
@@ -69,66 +69,74 @@ const App = () => {
     ]
   })
 
-//   const [isSending, setIsSending] = useState(false);
-//   const isMounted = useRef(true);
-
-  const pingInfluxHosts = async() => {
-      influx.ping(5000). then(hosts => {
-          hosts.forEach(host => {
-              if (host.online) {
-                console.log(`${host.url.host} responded in ${host.rtt}ms running ${host.version}`);
-              } else {
-                console.log(`${host.url.host} is offline :(`);
-              }
-          })
-      })
+  const createValidator = (x, y, id, toConnect) => {
+    const color = randomColor();
+    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+      // const id = counter + 1;
+      console.log(x, y)
+      // const from = Math.floor(Math.random() * (counter - 1)) + 1;
+      const from = toConnect;
+      return {
+        graph: {
+          nodes: [
+            ...nodes,
+            { id, label: `Node ${id}`, color, x, y }
+          ],
+          edges: [
+            ...edges,
+            { from, to: id }
+          ]
+        },
+        counter: id,
+        ...rest
+      }
+    });
   }
 
-//   const appendArray = ()
+  const [prevNode, setPrevNode] = useState(() => {
+    return 1;
+  });
+
+
+  const fetchQueryWrap = async () =>  {
+    let nodeId = await fetchQuery();
+    console.log('running every 3 seconds!');
+    console.log('nodeId added: ', nodeId);
+
+    setPrevNode(nodeId);
+
+
+  }
+
+
+ 
+  // this.setNodeIdList(nodeIdList = (id1) => ({
+  //   myArray: [...nodeIdList.myArray, id1]
+  // }));
 
   const fetchQuery = async () => {
-     influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
+     const nodeId = influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
         ).then(rawData => {
             // console.log(rawData);
             console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
-            // console.log(rawData[1]);
-            const id1 = rawData[0]["gossip_listen_loop_iterations_since_last_report"]
-            const color = randomColor();
-            const x = 100;
-            const y = 100;
-            setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-                const id = counter + 1;
-                const from = Math.floor(Math.random() * (counter - 1)) + 1;
-                return {
-                    graph: {
-                        nodes: [
-                            ...nodes,
-                            { id1, label: `Node ${id1}`, color, x, y }
-                        ],
-                        edges: [
-                            ...edges,
-                            { from, to: id1 }
-                        ]
-                    },
-                    counter: id1,
-                    ...rest
-                }
-            });
+            var id1 = rawData[0]["gossip_listen_loop_iterations_since_last_report"]
+            createValidator(311, -211, id1, prevNode);
+            // setPrevNodeWrap();
+            return id1;
         })
     
-      
+      return nodeId;
       
   }
 
-  useEffect(() => {
-      const interval = setInterval(() => {
-        // pingInfluxHosts()
-      fetchQuery()
-          console.log('running every 3 seconds!');
-      }, 3000);
-
-
-  }, []); //typically you'd put in a boolean. .
+  // useEffect(() => {
+  //     const interval = setInterval(() => {
+  //       // pingInfluxHosts()
+  //     const prev = fetchQuery()
+  //         console.log('running every 3 seconds!');
+  //     }, 3000);
+  //     setPrevNodeWrap();
+  // }, []); //typically you'd put in a boolean. .
 
   const [state, setState] = useState({
     counter: 5,
@@ -160,11 +168,17 @@ const App = () => {
         createNode(canvas.x, canvas.y);
       }
     }
+
   })
   const { graph, events } = state;
   return (
     <div>
-      {/* <input type="button" disabled={isSending} onClick={sendRequest} /> */}
+      {/* <button onClick={decrementCount}>-</button>
+      <span>{count}</span>
+      <span>{theme}</span>
+      <button onClick={incrementCount}>+</button> */}
+
+      <button onClick={fetchQueryWrap}>PRESS TO ADD A NODE</button>
       <h1>React graph vis</h1>
       <p>
         <a href="https://github.com/crubier/react-graph-vis">Github</a> -{" "}
