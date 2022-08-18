@@ -2,8 +2,10 @@ import Graph from "react-graph-vis";
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 const Influx = require('influx')
-const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
+// const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
+const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
 
+const gossipQuery = "select host from \"gossip-peers\" order by desc limit 1";
 
 const options = {
   layout: {
@@ -69,7 +71,7 @@ const App = () => {
     ]
   })
 
-  const createValidator = (x, y, id, toConnect) => {
+  const createGossipInstance = (x, y, id, toConnect) => {
     const color = randomColor();
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
       // const id = counter + 1;
@@ -80,7 +82,7 @@ const App = () => {
         graph: {
           nodes: [
             ...nodes,
-            { id, label: `Node ${id}`, color, x, y }
+            { id, label: `${id}`, color, x, y }
           ],
           edges: [
             ...edges,
@@ -115,13 +117,14 @@ const App = () => {
   // }));
 
   const fetchQuery = async () => {
-     const nodeId = influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
+    const nodeId = influx.query(gossipQuery
+    //  const nodeId = influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
         ).then(rawData => {
             // console.log(rawData);
-            console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
-            var id1 = rawData[0]["gossip_listen_loop_iterations_since_last_report"]
-            createValidator(311, -211, id1, prevNode);
-            // setPrevNodeWrap();
+            console.log(rawData[0]["host"])
+            // console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
+            var id1 = rawData[0]["host"]
+            createGossipInstance(311, -211, id1, prevNode);
             return id1;
         })
     
