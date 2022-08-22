@@ -7,11 +7,22 @@ import json
 import sys
 from datetime import datetime
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from Graph import Graph_struct
 from typing import Optional
 from bidict import bidict
 
 app = FastAPI()
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def read_root():
@@ -21,6 +32,10 @@ def read_root():
 def run_query(t0: str, t1: str):
     conn_components = run(t0, t1)
     return conn_components
+
+@app.get("/test")
+def run_test():
+    return {"c0": [1, 2, 3]}
 
 def process_results(points):
     pubkey_index_bidict = bidict({})
@@ -94,8 +109,8 @@ def query(client, t0, t1):
 
 def run(t0, t1):
     
-    t0_dt = datetime.strptime(t0, '%Y-%m-%dT%H:%M:%SZ')
-    t1_dt = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%SZ')
+    t0_dt = datetime.strptime(t0, '%Y-%m-%dT%H:%M:%S.%fZ')
+    t1_dt = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     client = InfluxDBClient(host='localhost', port=8087)
     databases = client.get_list_database()
@@ -105,6 +120,7 @@ def run(t0, t1):
 
 
 if __name__ == '__main__':
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
     if len(sys.argv) < 3:
         print("ERROR: need to enter start and end timestamp to query for connected components graph")
         sys.exit(-1)
