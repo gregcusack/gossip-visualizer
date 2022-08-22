@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import axios from 'axios'
 // import DateTimePicker from 'react-datetime-picker'
 import DateTimeRangePicker from '@wojtekmaj/react-datetimerange-picker';
+import { setSelectionRange } from "@testing-library/user-event/dist/utils";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
@@ -59,6 +60,8 @@ const App = () => {
 
 
   const [connections, setConnections] = useState({})
+  const [edges, setEdges] = useState({})
+  const [createInstances, setCreateInstances] = useState(false);
   // const [value, onChange] = useState(new Date());
 
   const now = new Date();
@@ -74,12 +77,10 @@ const App = () => {
       const queryString = '/query/'.concat(startTs).concat('/').concat(endTs)
       console.log(queryString)
       const res = await axios.get(queryString)
-      console.log(res.data)
-      setConnections(res.data)
-      console.log('setting connections: ', connections)
+      setConnections(res.data.connected_components)
+      setEdges(res.data.edges)
 
-
-
+      // setCreateInstances(true)
     }
     fetchData()
       .catch(console.error)
@@ -139,15 +140,7 @@ const App = () => {
     console.log('nodeId added: ', nodeId);
 
     setPrevNode(nodeId);
-
-
   }
-
-
- 
-  // this.setNodeIdList(nodeIdList = (id1) => ({
-  //   myArray: [...nodeIdList.myArray, id1]
-  // }));
 
   const fetchQuery = async () => {
     const nodeId = influx.query(gossipQuery
@@ -173,6 +166,52 @@ const App = () => {
   //     }, 3000);
   //     setPrevNodeWrap();
   // }, []); //typically you'd put in a boolean. .
+
+  // useEffect(() => {
+  //   Object.keys(edges).forEach((edge) => {
+  //     console.log("suhhhhh: edge: ", edge)
+  //   })
+  //   // const createGossipConnection()
+  // }, [createInstances]);
+
+  const createGossipConnection = (x, y, id1, id2) => {
+    const color1 = randomColor();
+    const color2 = randomColor();
+    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+      console.log(x, y)
+      // const from = id2;
+      return {
+        graph: {
+          nodes: [
+            ...nodes,
+            { id1, label: `${id1}`, color1, x, y },
+            // { id2, label: `${id2}`, color2, x, y }
+          ],
+          edges: [
+            ...edges,
+            { from: id1, to: id2 }
+          ]
+        },
+        counter: id1,
+        ...rest
+      }
+    });
+  }
+
+  const plotPeers = () => {
+    // console.log(edges)
+    Object.values(edges).forEach((edge) => {
+      console.log("suhhhhh: edge: ", edge)
+      console.log("edef", edge[0], edge[1])
+      // createGossipConnection(311, -211, edge[0], edge[1])
+      let nodeId = createGossipInstance(311, -211, edge[0], prevNode)
+      setPrevNode(nodeId)
+
+    })
+    // Object.keys(edges).forEach((edge) => {
+    //   console.log("suhhhhh: edge: ", edge)
+    // })
+  }
 
   const [state, setState] = useState({
     counter: 5,
@@ -208,7 +247,7 @@ const App = () => {
   })
   const { graph, events } = state;
 
-  const renderObj = () => {
+  const renderConnections = () => {
     console.log('connecrtions', connections)
     const divs = []
     Object.keys(connections).forEach((key) => {
@@ -220,9 +259,25 @@ const App = () => {
         divs.push(<div>{key} : {val}</div>) 
       })} </div>
     })
-    console.log('divs', divs)
+    console.log('divs connections', divs)
     return divs
   }
+
+  const renderEdges = () => {
+    const divs = []
+    Object.keys(edges).forEach((key) => {
+      console.log('edges', edges[key])
+      // divs.push(<div>{key} : {connections[key]}) </div>)
+      return <div> {edges[key].forEach((val) => {
+        // console.log(val)
+        // return <div>{val}, </div>
+        divs.push(<div>{val}</div>) 
+      })} </div>
+    })
+    console.log('divs edges', divs)
+    return divs
+  }
+
   return (
     <div>
       {/* <button onClick={decrementCount}>-</button>
@@ -244,7 +299,9 @@ const App = () => {
           return <val key={row.uniqueId} />
         })}
       </tbody> */}
-      {<div>{renderObj()}</div>}
+      {<div>{renderConnections()}</div>}
+      {<div>{renderEdges()}</div>}
+      <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
 
 
       
