@@ -2,7 +2,9 @@ import Graph from "react-graph-vis";
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import axios from 'axios'
-import DateTimePicker from 'react-datetime-picker'
+// import DateTimePicker from 'react-datetime-picker'
+import DateTimeRangePicker from '@wojtekmaj/react-datetimerange-picker';
+
 import { acceptsEncodings } from "express/lib/request";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
@@ -59,14 +61,28 @@ const App = () => {
 
 
   const [connections, setConnections] = useState([])
-  const [value, onChange] = useState(new Date());
+  // const [value, onChange] = useState(new Date());
+
+  const now = new Date();
+  const yesterdayBegin = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+  const [value, onChange] = useState([yesterdayBegin, todayNoon])
+
   
   useEffect(() => {
     const fetchData = async () => {
       // const data = axios.get('/test').then(res => setConnections(res.data))
-      const res = await axios.get('/test')
+      // const res = await axios.get('/test')
+      const startTs = value[0].toISOString()
+      const endTs = value[1].toISOString()
+      // const v = value[0].toISOString()
+      // console.log(v)
+      const queryString = '/query/'.concat(startTs).concat('/').concat(endTs)
+      console.log(queryString)
+      const res = await axios.get(queryString)
       console.log(res.data)
-      console.log(value)
+      console.log(value[0])
+      console.log(value[1])
     }
     fetchData()
       .catch(console.error)
@@ -211,9 +227,9 @@ const App = () => {
 
       <button onClick={fetchQueryWrap}>PRESS TO ADD A NODE</button>
       {/* <div><DateTimePicker onChange={onChange} value={value} /></div> */}
-      <div><DateTimePicker 
+      <div><DateTimeRangePicker 
         format='y-MM-dd h:mm:ss a'
-        returnValue='range'
+        // returnValue='range'
         onChange={onChange} value={value} 
         />
       </div>
