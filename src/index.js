@@ -4,8 +4,6 @@ import ReactDOM from "react-dom";
 import axios from 'axios'
 // import DateTimePicker from 'react-datetime-picker'
 import DateTimeRangePicker from '@wojtekmaj/react-datetimerange-picker';
-
-import { acceptsEncodings } from "express/lib/request";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
@@ -60,7 +58,7 @@ const App = () => {
   
 
 
-  const [connections, setConnections] = useState([])
+  const [connections, setConnections] = useState({})
   // const [value, onChange] = useState(new Date());
 
   const now = new Date();
@@ -71,30 +69,21 @@ const App = () => {
   
   useEffect(() => {
     const fetchData = async () => {
-      // const data = axios.get('/test').then(res => setConnections(res.data))
-      // const res = await axios.get('/test')
       const startTs = value[0].toISOString()
       const endTs = value[1].toISOString()
-      // const v = value[0].toISOString()
-      // console.log(v)
       const queryString = '/query/'.concat(startTs).concat('/').concat(endTs)
       console.log(queryString)
       const res = await axios.get(queryString)
       console.log(res.data)
-      console.log(value[0])
-      console.log(value[1])
+      setConnections(res.data)
+      console.log('setting connections: ', connections)
+
+
+
     }
     fetchData()
       .catch(console.error)
   }, [value]);
-
-  // return connections.map((p, index) => {
-  //   return <p key={index}>{p.c0}</p>
-  // })
-
-  
-  
-
 
 
   const client = new Influx.InfluxDB({
@@ -218,6 +207,22 @@ const App = () => {
 
   })
   const { graph, events } = state;
+
+  const renderObj = () => {
+    console.log('connecrtions', connections)
+    const divs = []
+    Object.keys(connections).forEach((key) => {
+      console.log('herEEEEE', key, connections[key])
+      // divs.push(<div>{key} : {connections[key]}) </div>)
+      return <div> {key} : {connections[key].forEach((val) => {
+        console.log(val)
+        // return <div>{val}, </div>
+        divs.push(<div>{key} : {val}</div>) 
+      })} </div>
+    })
+    console.log('divs', divs)
+    return divs
+  }
   return (
     <div>
       {/* <button onClick={decrementCount}>-</button>
@@ -233,6 +238,14 @@ const App = () => {
         onChange={onChange} value={value} 
         />
       </div>
+      {/* <button onClick={onChange}>Press to Query Gossip DB</button> */}
+      {/* <tbody>
+        {connections.map((row) => {
+          return <val key={row.uniqueId} />
+        })}
+      </tbody> */}
+      {<div>{renderObj()}</div>}
+
 
       
       <h1>React graph vis</h1>
