@@ -2,9 +2,14 @@ import Graph from "react-graph-vis";
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import axios from 'axios'
+import DateTimePicker from 'react-datetime-picker'
+import { acceptsEncodings } from "express/lib/request";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
+// axios({ url: "test", baseURL: "http://localhost:8000" });
+axios.defaults.baseURL = 'http://localhost:8000';
+
 
 const gossipQuery = "select host from \"gossip-peers\" order by desc limit 1";
 
@@ -49,6 +54,30 @@ const App = () => {
       }
     });
   }
+
+  
+
+
+  const [connections, setConnections] = useState([])
+  const [value, onChange] = useState(new Date());
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      // const data = axios.get('/test').then(res => setConnections(res.data))
+      const res = await axios.get('/test')
+      console.log(res.data)
+      console.log(value)
+    }
+    fetchData()
+      .catch(console.error)
+  }, [value]);
+
+  // return connections.map((p, index) => {
+  //   return <p key={index}>{p.c0}</p>
+  // })
+
+  
+  
 
 
 
@@ -181,6 +210,15 @@ const App = () => {
       <button onClick={incrementCount}>+</button> */}
 
       <button onClick={fetchQueryWrap}>PRESS TO ADD A NODE</button>
+      {/* <div><DateTimePicker onChange={onChange} value={value} /></div> */}
+      <div><DateTimePicker 
+        format='y-MM-dd h:mm:ss a'
+        returnValue='range'
+        onChange={onChange} value={value} 
+        />
+      </div>
+
+      
       <h1>React graph vis</h1>
       <p>
         <a href="https://github.com/crubier/react-graph-vis">Github</a> -{" "}
