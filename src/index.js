@@ -1,6 +1,7 @@
 import Graph from "react-graph-vis";
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+import axios from 'axios'
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
@@ -74,9 +75,7 @@ const App = () => {
   const createGossipInstance = (x, y, id, toConnect) => {
     const color = randomColor();
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-      // const id = counter + 1;
       console.log(x, y)
-      // const from = Math.floor(Math.random() * (counter - 1)) + 1;
       const from = toConnect;
       return {
         graph: {
