@@ -5,6 +5,7 @@ import axios from 'axios'
 // import DateTimePicker from 'react-datetime-picker'
 import DateTimeRangePicker from '@wojtekmaj/react-datetimerange-picker';
 import { setSelectionRange } from "@testing-library/user-event/dist/utils";
+import { consoleLogger } from "@influxdata/influxdb-client";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
 const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
@@ -59,9 +60,14 @@ const App = () => {
   
 
 
-  const [connections, setConnections] = useState({})
-  const [edges, setEdges] = useState({})
+  const [connections, setConnections] = useState({});
+  const [edges, setEdges] = useState({});
+  const [nodeKeys, setNodeKeys] = useState({});
   const [createInstances, setCreateInstances] = useState(false);
+  const [nodeIndexCount, setNodeIndexCount] = useState({
+    count: 6,
+    // 'CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ': 6
+  });
   // const [value, onChange] = useState(new Date());
 
   const now = new Date();
@@ -129,8 +135,91 @@ const App = () => {
     });
   }
 
+  //ID needs to be "id" can't be anything else
+  const createGossipInstance2 = (x, y, id, idFrom) => {
+    const color = randomColor();
+    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+      console.log(x, y)
+      const from = idFrom;
+      return {
+        graph: {
+          nodes: [
+            ...nodes,
+            { id, label: `${id}`, color, x, y }
+          ],
+          edges: [
+            ...edges,
+            { from: idFrom, to: id }
+          ]
+        },
+        counter: id,
+        ...rest
+      }
+    });
+  }
+
+
+  // const createGossipInstance = (x, y, id, toConnect) => {
+  //   const color = randomColor();
+  //   console.log("id to create: ", id);
+  //   console.log("toConnect: ", toConnect)
+  //   let toReturn = 0;
+  //   if(nodeKeys.hasOwnProperty(id)) {
+  //     console.log("key already exists!: ", id)
+  //     const intId = nodeIndexCount[id]
+  //     console.log("connecting From, To: ", intId, toConnect);
+  //     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+  //       console.log(x, y)
+  //       const from = toConnect;
+  //       return {
+  //         graph: {
+  //           nodes: [
+  //             ...nodes
+  //           ],
+  //           edges: [
+  //             ...edges,
+  //             { from: toConnect, to: intId }
+  //           ]
+  //         },
+  //         counter: id,
+  //         ...rest
+  //       }
+  //     });
+  //     toReturn = intId;
+
+  //   } else {
+  //     console.log("key does not exist");
+  //     nodeKeys[id] = true;
+  //     nodeIndexCount[id] = nodeIndexCount.count; 
+  //     const intId = nodeIndexCount[id]
+  //     nodeIndexCount.count += 1;
+  //     console.log("connecting From, To: ", intId, toConnect);
+  //     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+  //       console.log(x, y)
+  //       const from = toConnect;
+  //       return {
+  //         graph: {
+  //           nodes: [
+  //             ...nodes,
+  //             { intId, label: `${id}`, color, x, y }
+  //           ],
+  //           edges: [
+  //             ...edges,
+  //             { from: toConnect, to: intId }
+  //           ]
+  //         },
+  //         ...rest
+  //       }
+  //     });
+  //     toReturn = intId;
+  //   }
+    
+  //   return toReturn;
+  // }
+
   const [prevNode, setPrevNode] = useState(() => {
-    return 1;
+    // return 5;
+    return "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ"
   });
 
 
@@ -150,7 +239,9 @@ const App = () => {
             console.log(rawData[0]["host"])
             // console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
             var id1 = rawData[0]["host"]
-            createGossipInstance(311, -211, id1, prevNode);
+            // createGossipInstance(311, -211, id1, prevNode);
+            createGossipInstance2(311, -211, id1, prevNode);
+
             return id1;
         })
     
@@ -174,38 +265,121 @@ const App = () => {
   //   // const createGossipConnection()
   // }, [createInstances]);
 
-  const createGossipConnection = (x, y, id1, id2) => {
-    const color1 = randomColor();
-    const color2 = randomColor();
-    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-      console.log(x, y)
-      // const from = id2;
-      return {
-        graph: {
-          nodes: [
-            ...nodes,
-            { id1, label: `${id1}`, color1, x, y },
-            // { id2, label: `${id2}`, color2, x, y }
-          ],
-          edges: [
-            ...edges,
-            { from: id1, to: id2 }
-          ]
-        },
-        counter: id1,
-        ...rest
-      }
-    });
+  const createGossipConnection = (x, y, idFrom, idTo) => {
+    const color = randomColor();
+    console.log("idFrom, idTo: ", idFrom, idTo);
+    // console.log("toConnect: ", idTo)
+    if(nodeKeys.hasOwnProperty(idFrom) && nodeKeys.hasOwnProperty(idTo)) {
+      const intIdTo = nodeIndexCount[idTo]
+      const intIdFrom = nodeIndexCount[idFrom]
+      console.log("connecting From, To: ", intIdTo, intIdFrom);
+      console.log("key already exists!: ", idFrom)
+      setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+        console.log(x, y)
+        return {
+          graph: {
+            nodes: [
+              ...nodes
+            ],
+            edges: [
+              ...edges,
+              { from: intIdFrom, to: intIdTo }
+            ]
+          },
+          ...rest
+        }
+      });
+
+    } else if(nodeKeys.hasOwnProperty(idFrom) && !nodeKeys.hasOwnProperty(idTo)) {
+      nodeKeys[idTo] = true;
+      nodeIndexCount[idTo] = nodeIndexCount.count; 
+      const intIdTo = nodeIndexCount[idTo]
+      const intIdFrom = nodeIndexCount[idFrom]
+      nodeIndexCount.count += 1;
+      console.log("connecting From, To: ", intIdTo, intIdFrom);
+      setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+        console.log(x, y)
+        return {
+          graph: {
+            nodes: [
+              ...nodes,
+              { id: intIdTo, label: `${idTo}`, color, x, y }
+            ],
+            edges: [
+              ...edges,
+              { from: intIdFrom, to: intIdTo }
+            ]
+          },
+          ...rest
+        }
+      });
+    }
+    else if(!nodeKeys.hasOwnProperty(idFrom) && !nodeKeys.hasOwnProperty(idTo)) {
+      nodeKeys[idFrom] = true;
+      nodeKeys[idTo] = true;
+      nodeIndexCount[idTo] = nodeIndexCount.count; 
+      nodeIndexCount.count += 1;
+      nodeIndexCount[idFrom] = nodeIndexCount.count; 
+      nodeIndexCount.count += 1;
+      const intIdTo = nodeIndexCount[idTo]
+      const intIdFrom = nodeIndexCount[idFrom]
+      setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+        console.log(x, y)
+        return {
+          graph: {
+            nodes: [
+              ...nodes,
+              { id: intIdFrom, label: `${idFrom}`, color, x, y },
+              { id: intIdTo, label: `${idTo}`, color, x, y }
+            ],
+            edges: [
+              ...edges,
+              { from: intIdFrom, to: intIdTo }
+            ]
+          },
+          ...rest
+        }
+      });
+    } else { //idfrom does not exist, idTo exists
+      console.log("key does not exist");
+      nodeIndexCount[idFrom] = nodeIndexCount.count; 
+      nodeIndexCount.count += 1;
+      const intIdFrom = nodeIndexCount[idFrom]
+      const intIdTo = nodeIndexCount[idTo]
+
+      nodeKeys[idFrom] = true;
+      setState(({ graph: { nodes, edges }, counter, ...rest }) => {
+        console.log(x, y)
+        return {
+          graph: {
+            nodes: [
+              ...nodes,
+              { id: intIdFrom, label: `${idFrom}`, color, x, y }
+            ],
+            edges: [
+              ...edges,
+              { from: intIdFrom, to: intIdTo }
+            ]
+          },
+          ...rest
+        }
+      });
+    }
+    
+    // return id;
   }
 
   const plotPeers = () => {
     // console.log(edges)
     Object.values(edges).forEach((edge) => {
       console.log("suhhhhh: edge: ", edge)
-      console.log("edef", edge[0], edge[1])
-      // createGossipConnection(311, -211, edge[0], edge[1])
-      let nodeId = createGossipInstance(311, -211, edge[0], prevNode)
-      setPrevNode(nodeId)
+      console.log("edge", edge[0], edge[1])
+      // let nodeId = createGossipInstance(311, -211, edge[0], prevNode)
+      let nodeId = createGossipConnection(311, -211, edge[0], edge[1])
+      // let nodeId = createGossipConnection(311, -211, 0, 1)
+
+      // console.log("nodeId ret: ", nodeId)
+      // setPrevNode(nodeId)
 
     })
     // Object.keys(edges).forEach((edge) => {
@@ -217,18 +391,20 @@ const App = () => {
     counter: 5,
     graph: {
       nodes: [
-        { id: 1, label: "Node 1", color: "#e04141" },
-        { id: 2, label: "Node 2", color: "#e09c41" },
-        { id: 3, label: "Node 3", color: "#e0df41" },
-        { id: 4, label: "Node 4", color: "#7be041" },
-        { id: 5, label: "Node 5", color: "#41e0c9" }
+        // { id: 1, label: "Node 1", color: "#e04141" },
+        // { id: 2, label: "Node 2", color: "#e09c41" },
+        // { id: 3, label: "Node 3", color: "#e0df41" },
+        // { id: 4, label: "Node 4", color: "#7be041" },
+        // { id: 5, label: "Node 5", color: "#41e0c9" },
+        // { id: "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ", label: "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ", color: "#41e1c9"}
       ],
       edges: [
-        { from: 1, to: 2 },
-        { from: 1, to: 3 },
-        { from: 2, to: 4 },
-        { from: 2, to: 5 },
-        { from: 5, to: 3 },
+        // { from: 1, to: 2 },
+        // { from: 1, to: 3 },
+        // { from: 2, to: 4 },
+        // { from: 2, to: 5 },
+        // { from: 5, to: 3 },
+        // { from: "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ", to: 5 }
       ]
     },
     events: {
@@ -259,14 +435,14 @@ const App = () => {
         divs.push(<div>{key} : {val}</div>) 
       })} </div>
     })
-    console.log('divs connections', divs)
+    // console.log('divs connections', divs)
     return divs
   }
 
   const renderEdges = () => {
     const divs = []
     Object.keys(edges).forEach((key) => {
-      console.log('edges', edges[key])
+      // console.log('edges', edges[key])
       // divs.push(<div>{key} : {connections[key]}) </div>)
       return <div> {edges[key].forEach((val) => {
         // console.log(val)
@@ -274,7 +450,7 @@ const App = () => {
         divs.push(<div>{val}</div>) 
       })} </div>
     })
-    console.log('divs edges', divs)
+    // console.log('divs edges', divs)
     return divs
   }
 
@@ -299,8 +475,8 @@ const App = () => {
           return <val key={row.uniqueId} />
         })}
       </tbody> */}
-      {<div>{renderConnections()}</div>}
-      {<div>{renderEdges()}</div>}
+      {/* {<div>{renderConnections()}</div>}
+      {<div>{renderEdges()}</div>} */}
       <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
 
 
