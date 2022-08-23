@@ -16,21 +16,61 @@ axios.defaults.baseURL = 'http://localhost:8000';
 const gossipQuery = "select host from \"gossip-peers\" order by desc limit 1";
 
 const options = {
-  layout: {
-    hierarchical: false 
+  // layout: {
+  //   improvedLayout: true,
+  //   hierarchical: {
+  //     enabled: false,
+  //     blockShifting: false,
+  //     nodeSpacing: 10000,
+  //     treeSpacing: 1000,
+  //     levelSeparation: 10000,
+  //     edgeMinimization: false
+
+  //   }
+  // },
+  
+  physics: {
+    hierarchicalRepulsion: {
+      centralGravity: 0.0,
+      springLength: 100,
+      springConstant: 0.01,
+      nodeDistance: 120,
+      damping: 0.09,
+      avoidOverlap: 100
+    },
+    stabilization: {
+      enabled: true,
+      iterations: 100,
+      updateInterval: 100,
+      onlyDynamicEdges: false,
+      fit: true
+    },
   },
   edges: {
-    color: "#000000"
-  }
+    color: "#000000",
+    // physics: false,
+    length: 500,
+  },
+
 };
 
 
 
 function randomColor() {
-  const red = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  const green = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  const blue = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  return `#${red}${green}${blue}`;
+  // const red = Math.floor(Math.random() * 256).toString(16).padStart(2, '7');
+  // const green = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+  // const blue = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+  // // console.log("color: ", red, blue, green)
+  var letters = '6789ABCDEF'.split('');
+  var color = '#';
+  for (var i = 0; i < 6; i++ ) {
+      color += letters[Math.floor(Math.random() * letters.length)];
+  }
+  console.log("color:", color)
+  return color;
+
+
+  // return `#${red}${green}${blue}`;
 }
 
 const App = () => {
@@ -57,9 +97,10 @@ const App = () => {
     });
   }
 
+
   
 
-
+  const [network, setNetwork] = useState(undefined)
   const [connections, setConnections] = useState({});
   const [edges, setEdges] = useState({});
   const [nodeKeys, setNodeKeys] = useState({});
@@ -158,64 +199,6 @@ const App = () => {
     });
   }
 
-
-  // const createGossipInstance = (x, y, id, toConnect) => {
-  //   const color = randomColor();
-  //   console.log("id to create: ", id);
-  //   console.log("toConnect: ", toConnect)
-  //   let toReturn = 0;
-  //   if(nodeKeys.hasOwnProperty(id)) {
-  //     console.log("key already exists!: ", id)
-  //     const intId = nodeIndexCount[id]
-  //     console.log("connecting From, To: ", intId, toConnect);
-  //     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-  //       console.log(x, y)
-  //       const from = toConnect;
-  //       return {
-  //         graph: {
-  //           nodes: [
-  //             ...nodes
-  //           ],
-  //           edges: [
-  //             ...edges,
-  //             { from: toConnect, to: intId }
-  //           ]
-  //         },
-  //         counter: id,
-  //         ...rest
-  //       }
-  //     });
-  //     toReturn = intId;
-
-  //   } else {
-  //     console.log("key does not exist");
-  //     nodeKeys[id] = true;
-  //     nodeIndexCount[id] = nodeIndexCount.count; 
-  //     const intId = nodeIndexCount[id]
-  //     nodeIndexCount.count += 1;
-  //     console.log("connecting From, To: ", intId, toConnect);
-  //     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-  //       console.log(x, y)
-  //       const from = toConnect;
-  //       return {
-  //         graph: {
-  //           nodes: [
-  //             ...nodes,
-  //             { intId, label: `${id}`, color, x, y }
-  //           ],
-  //           edges: [
-  //             ...edges,
-  //             { from: toConnect, to: intId }
-  //           ]
-  //         },
-  //         ...rest
-  //       }
-  //     });
-  //     toReturn = intId;
-  //   }
-    
-  //   return toReturn;
-  // }
 
   const [prevNode, setPrevNode] = useState(() => {
     // return 5;
@@ -387,6 +370,17 @@ const App = () => {
     // })
   }
 
+  // useEffect(() => {
+  //   console.log("what up yoo");
+  //   network.setOptions({ physics: false }); // Disable physics after stabilization
+  //   network.fit();
+  //   // if (network) { // Network will be set using getNetwork event from the Graph component
+      
+  //   // }
+    
+  //   // const createGossipConnection()
+  // }, [network]);
+
   const [state, setState] = useState({
     counter: 5,
     graph: {
@@ -417,8 +411,16 @@ const App = () => {
       },
       doubleClick: ({ pointer: { canvas } }) => {
         createNode(canvas.x, canvas.y);
+      },
+      stabilized: () => {
+        console.log("heyyy greg")
+        if (network) { // Network will be set using getNetwork event from the Graph component
+          network.fit();
+      }
+        
       }
     }
+    
 
   })
   const { graph, events } = state;
@@ -430,7 +432,7 @@ const App = () => {
       console.log('herEEEEE', key, connections[key])
       // divs.push(<div>{key} : {connections[key]}) </div>)
       return <div> {key} : {connections[key].forEach((val) => {
-        console.log(val)
+        // console.log(val)
         // return <div>{val}, </div>
         divs.push(<div>{key} : {val}</div>) 
       })} </div>
@@ -461,8 +463,9 @@ const App = () => {
       <span>{theme}</span>
       <button onClick={incrementCount}>+</button> */}
 
-      <button onClick={fetchQueryWrap}>PRESS TO ADD A NODE</button>
+      {/* <button onClick={fetchQueryWrap}>PRESS TO ADD A NODE</button> */}
       {/* <div><DateTimePicker onChange={onChange} value={value} /></div> */}
+      <h1>Solana Gossip Visualizer</h1>
       <div><DateTimeRangePicker 
         format='y-MM-dd h:mm:ss a'
         // returnValue='range'
@@ -475,13 +478,13 @@ const App = () => {
           return <val key={row.uniqueId} />
         })}
       </tbody> */}
-      {/* {<div>{renderConnections()}</div>}
-      {<div>{renderEdges()}</div>} */}
+      {<div>{renderConnections()}</div>}
+      {/* {<div>{renderEdges()}</div>} */}
       <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
 
 
       
-      <h1>React graph vis</h1>
+      {/* <h1>React graph vis</h1>
       <p>
         <a href="https://github.com/crubier/react-graph-vis">Github</a> -{" "}
         <a href="https://www.npmjs.com/package/react-graph-vis">NPM</a>
@@ -491,8 +494,8 @@ const App = () => {
       <p>Make sure to visit <a href="http://visjs.org">visjs.org</a> for more info.</p>
       <p>This package allows to render network graphs using vis.js.</p>
       <p>Rendered graphs are scrollable, zoomable, retina ready, dynamic</p>
-      <p>In this example, we manage state with react: on double click we create a new node, and on select we display an alert.</p>
-      <Graph graph={graph} options={options} events={events} style={{ height: "640px" }} />
+      <p>In this example, we manage state with react: on double click we create a new node, and on select we display an alert.</p> */}
+      <Graph graph={graph} options={options} events={events} getNetwork = { network=> { setNetwork(network) } } style={{ height: "1000px", backgroundColor:'gray' }} />
     </div>
   );
 
