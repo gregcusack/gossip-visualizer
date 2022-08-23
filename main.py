@@ -30,8 +30,8 @@ def read_root():
 
 @app.get("/query/{t0}/{t1}")
 def run_query(t0: str, t1: str):
-    conn_components = run(t0, t1)
-    return conn_components
+    conn_components, edges = run(t0, t1)
+    return {"connected_components" : conn_components, "edges": edges}
 
 @app.get("/test")
 def run_test():
@@ -68,10 +68,13 @@ def process_results(points):
     graph = Graph_struct(len(pub_key_set))
 
     print("Graph Edges:")
+    graph_edges = []
     for h, ps in hostMap.items():
         for p in ps:
             print(h,p)
             graph.add_edge(pub_key_set[h], pub_key_set[p])
+            graph_edges.append([h,p])
+
     
     conn_comp = graph.connected_components()
     print("The connected components are :")
@@ -79,13 +82,13 @@ def process_results(points):
 
     connected_pubkeys = {}
     for idx, component in enumerate(conn_comp):
-        connected_pubkeys["c" + str(idx)] = [pubkey_index_bidict.inverse[i] for i in component]
+        connected_pubkeys["cluster_" + str(idx)] = [pubkey_index_bidict.inverse[i] for i in component]
 
     for k, connections in connected_pubkeys.items():
         print("connected keys: " + str(k) + ", " + str(connections))
     
     # return conn_comp
-    return connected_pubkeys
+    return connected_pubkeys, graph_edges
 
 
 def parse_result(result):
