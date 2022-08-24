@@ -74,6 +74,7 @@ const App = () => {
     const fetchData = async () => {
       const startTs = value[0].toISOString()
       const endTs = value[1].toISOString()
+
       const queryString = '/query-connections/'.concat(startTs).concat('/').concat(endTs)
       console.log(queryString)
       const res = await axios.get(queryString)
@@ -291,7 +292,7 @@ const App = () => {
 
 
   const isMounted = useRef(false);
-  const renderMessages = useRef(false)
+  // const renderDivs = useRef(false)
 
   const [message, setMessage] = useState({
     signature: '',
@@ -302,12 +303,17 @@ const App = () => {
   const [originatingHost, setOriginatingHost] = useState('2bFNkyX9Sb6vCeYwdnrN4ViK77pe3Br5xRXS6GyKkQYH');
 
   const [messageResults, setMessageResults] = useState({});
-
-  useEffect(() => {
-    if(renderMessages.current) {
+  const [renderDivs, setRenderDivs] = useState(false)
+  
+  const renderMessageResults = () => {
+    console.log("in redner divs")
+      const divs = []
+      divs.push(<div>Cluster Connections: </div>);
+      divs.push(<div>Signature: {signature} <br /> fromHost: {originatingHost}</div>);
       Object.keys(messageResults).forEach((key) => {
         console.log('message: ', messageResults[key])
 
+        const current_host = messageResults[key].current_host;
         const ts = Intl.DateTimeFormat('en-US', {
           year: 'numeric', 
           month: '2-digit', 
@@ -318,25 +324,16 @@ const App = () => {
           fractionalSecondDigits: 3, 
           hour12: false
         }).format(messageResults[key].timestamp_at_host)
+        
         console.log(ts)
-        console.log(messageResults[key].current_host)
-        // Object.keys(messageResults[key]).forEach((item) => {
-        //   console.log("item: ", item, messageResults[key][item])
-        // })
+        console.log(current_host)
+
+        divs.push(<div>{ts} : {current_host}</div>);
 
       })
+      return divs;
+  }
 
-      // Object.keys(messageResults).forEach((key) => {
-      //   console.log('message: ', messageResults[key])
-
-      // })
-
-    } else {
-      renderMessages.current = true;
-    }
-
-  }, [messageResults])
-  
 
   useEffect(() => {
     if(isMounted.current) {
@@ -351,6 +348,11 @@ const App = () => {
         const res = await axios.get(queryString)
         console.log("query res: ", res.data);
         setMessageResults(res.data)
+        // renderDivs.current = true;
+        setRenderDivs(true)
+        // renderMessageResults(res.data)
+
+
 
 
       }
@@ -380,6 +382,8 @@ const App = () => {
       </div>
       {<div>Cluster Connections: {renderConnections()}</div>}
       {/* {<div>{renderEdges()}</div>} */}
+
+      
       <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
       
       <div>
@@ -406,6 +410,9 @@ const App = () => {
           <button>Search</button>
           {/* <p>{signature}, {originatingHost}</p> */}
         </form>
+      </div>
+      <div>
+        {renderMessageResults()} 
       </div>
 
       <Graph graph={graph} options={options} events={events} getNetwork = { network=> { setNetwork(network) } } style={{ height: "1000px", backgroundColor:'gray' }} />
