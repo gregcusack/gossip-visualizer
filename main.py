@@ -29,9 +29,7 @@ def run_connection_query(t0: str, t1: str):
 @app.get("/query-messages/{signature}/{source}")
 def run_messages_query(signature: str, source: str):
     gossip_query = GossipQuery("messages")
-    result = gossip_query.query(signature, source)
-    print("suhhh" + str(result))
-    return result
+    return gossip_query.query(signature, source)
 
 
 @app.get("/test")

@@ -49,16 +49,17 @@ class GossipQuery():
 
     def execute_messages_query(self, signature, source):
         query_string = 'SELECT current_host, timestamp_at_host FROM "gossip-messages" \
-         where message_signature=\'' + signature + '\' and originating_host=\'' + source + '\' order by time asc' 
+            where message_signature=\'' + signature + '\' and originating_host=\'' + source + '\' order by time asc' 
 
         self.result = self.client.query(query_string)
         return self.parse_result()
 
     def execute_connections_query(self, t0, t1):
         timerange = GossipQuery.convertFromLocaltoUTC(t0,t1)
+        # query_string = 'SELECT time, host, peers FROM "gossip-peers"'
 
         query_string = 'SELECT time, host, peers FROM "gossip-peers" \
-        where time > \'' + timerange["start"] + '\' and time < \'' + timerange["end"] + '\' order by time asc'
+            where time > \'' + timerange["start"] + '\' and time < \'' + timerange["end"] + '\' order by time asc'
 
         self.result = self.client.query(query_string)    
         return self.parse_result() 
