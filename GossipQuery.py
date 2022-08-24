@@ -9,7 +9,8 @@ from Graph import Graph_struct
 
 
 class GossipQuery():
-    def __init__(self, query_type):
+    def __init__(self, location, query_type):
+        self.location = location
         self.query_type = query_type
         self.client = InfluxDBClient(host='localhost', port=8087)
         self.client.switch_database('gossipDb')
@@ -17,14 +18,20 @@ class GossipQuery():
         self.result = None
 
     @staticmethod
-    def convertFromLocaltoUTC(t0, t1):
+    def convertFromLocaltoUTC(location, t0, t1):
         res = {}
-        t0_dt = datetime.strptime(t0, '%Y-%m-%dT%H:%M:%S.%fZ')
-        t1_dt = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
-        t0_utc = t0_dt.astimezone(pytz.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
-        t1_utc = t1_dt.astimezone(pytz.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
-        res["start"] = t0_utc
-        res["end"] = t1_utc
+        if location == "web":
+            res["start"] = t0
+            res["end"] = t1
+        else:
+            t0_dt = datetime.strptime(t0, '%Y-%m-%dT%H:%M:%S.%fZ')
+            t1_dt = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
+            t0_utc = t0_dt.astimezone(pytz.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
+            t1_utc = t1_dt.astimezone(pytz.UTC).strftime('%Y-%m-%dT%H:%M:%S.%fZ')[:-4] + "Z"
+            res["start"] = t0_utc
+            res["end"] = t1_utc
+        
+
         return res
 
     def query(self, op1, op2):
@@ -55,7 +62,7 @@ class GossipQuery():
         return self.parse_result()
 
     def execute_connections_query(self, t0, t1):
-        timerange = GossipQuery.convertFromLocaltoUTC(t0,t1)
+        timerange = GossipQuery.convertFromLocaltoUTC(self.location, t0,t1)
         # query_string = 'SELECT time, host, peers FROM "gossip-peers"'
 
         query_string = 'SELECT time, host, peers FROM "gossip-peers" \
@@ -88,7 +95,7 @@ class GossipQuery():
         # print(hostMap)
         print("#################  PARSED QUERY  #################")
         row_names = []
-        print("all keys: " + str(pub_key_set))
+        # print("all keys: " + str(pub_key_set))
         for h, ps in hostMap.items():
             row_names.append(h)
 
@@ -98,7 +105,7 @@ class GossipQuery():
         graph_edges = []
         for h, ps in hostMap.items():
             for p in ps:
-                print(h,p)
+                # print(h,p)
                 graph.add_edge(pub_key_set[h], pub_key_set[p])
                 graph_edges.append([h,p])
 
@@ -111,8 +118,8 @@ class GossipQuery():
         for idx, component in enumerate(conn_comp):
             connected_pubkeys["cluster_" + str(idx)] = [pubkey_index_bidict.inverse[i] for i in component]
 
-        for k, connections in connected_pubkeys.items():
-            print("connected keys: " + str(k) + ", " + str(connections))
+        # for k, connections in connected_pubkeys.items():
+        #     print("connected keys: " + str(k) + ", " + str(connections))
         
         # return conn_comp
         return connected_pubkeys, graph_edges
@@ -121,6 +128,6 @@ class GossipQuery():
         # print(points)
         result = []
         for point in points:
-            print(point)
+            # print(point)
             result.append(point)
         return result
