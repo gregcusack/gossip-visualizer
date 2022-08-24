@@ -1,10 +1,9 @@
 import Graph from "react-graph-vis";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import axios from 'axios'
 // import DateTimePicker from 'react-datetime-picker'
 import DateTimeRangePicker from '@wojtekmaj/react-datetimerange-picker';
-import { setSelectionRange } from "@testing-library/user-event/dist/utils";
 import { consoleLogger } from "@influxdata/influxdb-client";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
@@ -13,21 +12,7 @@ const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
 axios.defaults.baseURL = 'http://localhost:8000';
 
 
-const gossipQuery = "select host from \"gossip-peers\" order by desc limit 1";
-
 const options = {
-  // layout: {
-  //   improvedLayout: true,
-  //   hierarchical: {
-  //     enabled: false,
-  //     blockShifting: false,
-  //     nodeSpacing: 10000,
-  //     treeSpacing: 1000,
-  //     levelSeparation: 10000,
-  //     edgeMinimization: false
-
-  //   }
-  // },
   
   physics: {
     hierarchicalRepulsion: {
@@ -57,16 +42,12 @@ const options = {
 
 
 function randomColor() {
-  // const red = Math.floor(Math.random() * 256).toString(16).padStart(2, '7');
-  // const green = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  // const blue = Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
-  // // console.log("color: ", red, blue, green)
   var letters = '6789ABCDEF'.split('');
   var color = '#';
   for (var i = 0; i < 6; i++ ) {
       color += letters[Math.floor(Math.random() * letters.length)];
   }
-  console.log("color:", color)
+  // console.log("color:", color)
   return color;
 
 
@@ -74,32 +55,6 @@ function randomColor() {
 }
 
 const App = () => {
-  const createNode = (x, y) => {
-    const color = randomColor();
-    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-      const id = counter + 1;
-      console.log(x, y)
-      const from = Math.floor(Math.random() * (counter - 1)) + 1;
-      return {
-        graph: {
-          nodes: [
-            ...nodes,
-            { id, label: `Node ${id}`, color, x, y }
-          ],
-          edges: [
-            ...edges,
-            { from, to: id }
-          ]
-        },
-        counter: id,
-        ...rest
-      }
-    });
-  }
-
-
-  
-
   const [network, setNetwork] = useState(undefined)
   const [connections, setConnections] = useState({});
   const [edges, setEdges] = useState({});
@@ -107,9 +62,7 @@ const App = () => {
   const [createInstances, setCreateInstances] = useState(false);
   const [nodeIndexCount, setNodeIndexCount] = useState({
     count: 6,
-    // 'CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ': 6
   });
-  // const [value, onChange] = useState(new Date());
 
   const now = new Date();
   const yesterdayBegin = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
@@ -154,99 +107,6 @@ const App = () => {
     ]
   })
 
-  const createGossipInstance = (x, y, id, toConnect) => {
-    const color = randomColor();
-    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-      console.log(x, y)
-      const from = toConnect;
-      return {
-        graph: {
-          nodes: [
-            ...nodes,
-            { id, label: `${id}`, color, x, y }
-          ],
-          edges: [
-            ...edges,
-            { from, to: id }
-          ]
-        },
-        counter: id,
-        ...rest
-      }
-    });
-  }
-
-  //ID needs to be "id" can't be anything else
-  const createGossipInstance2 = (x, y, id, idFrom) => {
-    const color = randomColor();
-    setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-      // console.log(x, y)
-      const from = idFrom;
-      return {
-        graph: {
-          nodes: [
-            ...nodes,
-            { id, label: `${id}`, color, x, y }
-          ],
-          edges: [
-            ...edges,
-            { from: idFrom, to: id }
-          ]
-        },
-        counter: id,
-        ...rest
-      }
-    });
-  }
-
-
-  const [prevNode, setPrevNode] = useState(() => {
-    // return 5;
-    return "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ"
-  });
-
-
-  const fetchQueryWrap = async () =>  {
-    let nodeId = await fetchQuery();
-    // console.log('running every 3 seconds!');
-    // console.log('nodeId added: ', nodeId);
-
-    setPrevNode(nodeId);
-  }
-
-  const fetchQuery = async () => {
-    const nodeId = influx.query(gossipQuery
-    //  const nodeId = influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
-        ).then(rawData => {
-            // console.log(rawData);
-            // console.log(rawData[0]["host"])
-            // console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
-            var id1 = rawData[0]["host"]
-            // createGossipInstance(311, -211, id1, prevNode);
-            createGossipInstance2(311, -211, id1, prevNode);
-
-            return id1;
-        })
-    
-      return nodeId;
-      
-  }
-
-  // useEffect(() => {
-  //     const interval = setInterval(() => {
-  //       // pingInfluxHosts()
-  //     const prev = fetchQuery()
-  //         console.log('running every 3 seconds!');
-  //     }, 3000);
-  //     setPrevNodeWrap();
-  // }, []); //typically you'd put in a boolean. .
-
-  // useEffect(() => {
-  //   Object.keys(edges).forEach((edge) => {
-  //     console.log("suhhhhh: edge: ", edge)
-  //   })
-  //   // const createGossipConnection()
-  // }, [createInstances]);
 
   const createGossipConnection = (x, y, idFrom, idTo) => {
     const color = randomColor();
@@ -353,21 +213,9 @@ const App = () => {
   }
 
   const plotPeers = () => {
-    // console.log(edges)
     Object.values(edges).forEach((edge) => {
-      // console.log("suhhhhh: edge: ", edge)
-      // console.log("edge", edge[0], edge[1])
-      // let nodeId = createGossipInstance(311, -211, edge[0], prevNode)
-      let nodeId = createGossipConnection(311, -211, edge[0], edge[1])
-      // let nodeId = createGossipConnection(311, -211, 0, 1)
-
-      // console.log("nodeId ret: ", nodeId)
-      // setPrevNode(nodeId)
-
+      createGossipConnection(311, -211, edge[0], edge[1])
     })
-    // Object.keys(edges).forEach((edge) => {
-    //   console.log("suhhhhh: edge: ", edge)
-    // })
   }
 
   // useEffect(() => {
@@ -385,20 +233,8 @@ const App = () => {
     counter: 5,
     graph: {
       nodes: [
-        // { id: 1, label: "Node 1", color: "#e04141" },
-        // { id: 2, label: "Node 2", color: "#e09c41" },
-        // { id: 3, label: "Node 3", color: "#e0df41" },
-        // { id: 4, label: "Node 4", color: "#7be041" },
-        // { id: 5, label: "Node 5", color: "#41e0c9" },
-        // { id: "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ", label: "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ", color: "#41e1c9"}
       ],
       edges: [
-        // { from: 1, to: 2 },
-        // { from: 1, to: 3 },
-        // { from: 2, to: 4 },
-        // { from: 2, to: 5 },
-        // { from: 5, to: 3 },
-        // { from: "CheittPFTFkseatgHhRsMKnDwwtwUuDozZzzR3q8GEeJ", to: 5 }
       ]
     },
     events: {
@@ -408,9 +244,6 @@ const App = () => {
         console.log("Selected edges:");
         console.log(edges);
         alert("Selected node: " + nodes);
-      },
-      doubleClick: ({ pointer: { canvas } }) => {
-        createNode(canvas.x, canvas.y);
       },
       stabilized: () => {
         console.log("heyyy greg")
@@ -456,15 +289,88 @@ const App = () => {
     return divs
   }
 
+
+  const isMounted = useRef(false);
+  const renderMessages = useRef(false)
+
+  const [message, setMessage] = useState({
+    signature: '',
+    originatingHost: ''
+  });
+  
+  const [signature, setSignature] = useState('2FNSB73ay8WCVp4Ua7VEWnsSEWXLEF56FxjUBpDGgFat26vQvzdU2C7MwAu7XNXhTTUyFS11bWW713fXepHpaQBj');
+  const [originatingHost, setOriginatingHost] = useState('2bFNkyX9Sb6vCeYwdnrN4ViK77pe3Br5xRXS6GyKkQYH');
+
+  const [messageResults, setMessageResults] = useState({});
+
+  useEffect(() => {
+    if(renderMessages.current) {
+      Object.keys(messageResults).forEach((key) => {
+        console.log('message: ', messageResults[key])
+
+        const ts = Intl.DateTimeFormat('en-US', {
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit', 
+          fractionalSecondDigits: 3, 
+          hour12: false
+        }).format(messageResults[key].timestamp_at_host)
+        console.log(ts)
+        console.log(messageResults[key].current_host)
+        // Object.keys(messageResults[key]).forEach((item) => {
+        //   console.log("item: ", item, messageResults[key][item])
+        // })
+
+      })
+
+      // Object.keys(messageResults).forEach((key) => {
+      //   console.log('message: ', messageResults[key])
+
+      // })
+
+    } else {
+      renderMessages.current = true;
+    }
+
+  }, [messageResults])
+  
+
+  useEffect(() => {
+    if(isMounted.current) {
+      console.log("sig: ", message.signature);
+      console.log("host: ", message.originatingHost);
+
+      const fetchData = async () => {
+        const sig = message.signature;
+        const host = message.originatingHost;
+        const queryString = '/query-messages/'.concat(sig).concat('/').concat(host)
+        console.log(queryString)
+        const res = await axios.get(queryString)
+        console.log("query res: ", res.data);
+        setMessageResults(res.data)
+
+
+      }
+      fetchData()
+        .catch(console.error)
+    } else {
+      isMounted.current = true;
+    }
+
+  }, [message]);
+
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // prevents page from being refreshed
+    setMessage({signature: signature, originatingHost: originatingHost})
+
+  }
+
   return (
     <div>
-      {/* <button onClick={decrementCount}>-</button>
-      <span>{count}</span>
-      <span>{theme}</span>
-      <button onClick={incrementCount}>+</button> */}
-
-      {/* <button onClick={fetchQueryWrap}>PRESS TO ADD A NODE</button> */}
-      {/* <div><DateTimePicker onChange={onChange} value={value} /></div> */}
       <h1>Solana Gossip Visualizer</h1>
       <div><DateTimeRangePicker 
         format='y-MM-dd h:mm:ss a'
@@ -472,29 +378,36 @@ const App = () => {
         onChange={onChange} value={value} 
         />
       </div>
-      {/* <button onClick={onChange}>Press to Query Gossip DB</button> */}
-      {/* <tbody>
-        {connections.map((row) => {
-          return <val key={row.uniqueId} />
-        })}
-      </tbody> */}
-      {<div>{renderConnections()}</div>}
+      {<div>Cluster Connections: {renderConnections()}</div>}
       {/* {<div>{renderEdges()}</div>} */}
       <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
-
-
       
-      {/* <h1>React graph vis</h1>
-      <p>
-        <a href="https://github.com/crubier/react-graph-vis">Github</a> -{" "}
-        <a href="https://www.npmjs.com/package/react-graph-vis">NPM</a>
-      </p>
-      <p><a href="https://github.com/crubier/react-graph-vis/tree/master/example/src/index.js">Source of this page</a></p>
-      <p>A React component to display beautiful network graphs using vis.js</p>
-      <p>Make sure to visit <a href="http://visjs.org">visjs.org</a> for more info.</p>
-      <p>This package allows to render network graphs using vis.js.</p>
-      <p>Rendered graphs are scrollable, zoomable, retina ready, dynamic</p>
-      <p>In this example, we manage state with react: on double click we create a new node, and on select we display an alert.</p> */}
+      <div>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Message Signature:
+            <input 
+              type="text" 
+              required
+              value={signature}
+              onChange={(e) => setSignature(e.target.value)}
+            />
+          </label>
+          <br />
+          <label>
+            Message Origin:
+            <input 
+              type="text" 
+              required
+              value={originatingHost}
+              onChange={(e) => setOriginatingHost(e.target.value)}
+            />
+          </label>
+          <button>Search</button>
+          {/* <p>{signature}, {originatingHost}</p> */}
+        </form>
+      </div>
+
       <Graph graph={graph} options={options} events={events} getNetwork = { network=> { setNetwork(network) } } style={{ height: "1000px", backgroundColor:'gray' }} />
     </div>
   );
