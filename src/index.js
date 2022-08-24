@@ -121,7 +121,7 @@ const App = () => {
     const fetchData = async () => {
       const startTs = value[0].toISOString()
       const endTs = value[1].toISOString()
-      const queryString = '/query/'.concat(startTs).concat('/').concat(endTs)
+      const queryString = '/query-connections/'.concat(startTs).concat('/').concat(endTs)
       console.log(queryString)
       const res = await axios.get(queryString)
       setConnections(res.data.connected_components)
@@ -180,7 +180,7 @@ const App = () => {
   const createGossipInstance2 = (x, y, id, idFrom) => {
     const color = randomColor();
     setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-      console.log(x, y)
+      // console.log(x, y)
       const from = idFrom;
       return {
         graph: {
@@ -208,8 +208,8 @@ const App = () => {
 
   const fetchQueryWrap = async () =>  {
     let nodeId = await fetchQuery();
-    console.log('running every 3 seconds!');
-    console.log('nodeId added: ', nodeId);
+    // console.log('running every 3 seconds!');
+    // console.log('nodeId added: ', nodeId);
 
     setPrevNode(nodeId);
   }
@@ -219,7 +219,7 @@ const App = () => {
     //  const nodeId = influx.query('SELECT mean("gossip_listen_loop_iterations_since_last_report") AS "gossip_listen_loop_iterations_since_last_report" FROM "testnet"."autogen"."cluster_info_stats3" WHERE time > now()-2m  GROUP BY time(10s) fill(null)'
         ).then(rawData => {
             // console.log(rawData);
-            console.log(rawData[0]["host"])
+            // console.log(rawData[0]["host"])
             // console.log(rawData[0]["time"], "---", rawData[0]["gossip_listen_loop_iterations_since_last_report"]);
             var id1 = rawData[0]["host"]
             // createGossipInstance(311, -211, id1, prevNode);
@@ -250,15 +250,15 @@ const App = () => {
 
   const createGossipConnection = (x, y, idFrom, idTo) => {
     const color = randomColor();
-    console.log("idFrom, idTo: ", idFrom, idTo);
+    // console.log("idFrom, idTo: ", idFrom, idTo);
     // console.log("toConnect: ", idTo)
     if(nodeKeys.hasOwnProperty(idFrom) && nodeKeys.hasOwnProperty(idTo)) {
       const intIdTo = nodeIndexCount[idTo]
       const intIdFrom = nodeIndexCount[idFrom]
-      console.log("connecting From, To: ", intIdTo, intIdFrom);
-      console.log("key already exists!: ", idFrom)
+      // console.log("connecting From, To: ", intIdTo, intIdFrom);
+      // console.log("key already exists!: ", idFrom)
       setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-        console.log(x, y)
+        // console.log(x, y)
         return {
           graph: {
             nodes: [
@@ -279,9 +279,9 @@ const App = () => {
       const intIdTo = nodeIndexCount[idTo]
       const intIdFrom = nodeIndexCount[idFrom]
       nodeIndexCount.count += 1;
-      console.log("connecting From, To: ", intIdTo, intIdFrom);
+      // console.log("connecting From, To: ", intIdTo, intIdFrom);
       setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-        console.log(x, y)
+        // console.log(x, y)
         return {
           graph: {
             nodes: [
@@ -307,7 +307,7 @@ const App = () => {
       const intIdTo = nodeIndexCount[idTo]
       const intIdFrom = nodeIndexCount[idFrom]
       setState(({ graph: { nodes, edges }, counter, ...rest }) => {
-        console.log(x, y)
+        // console.log(x, y)
         return {
           graph: {
             nodes: [
@@ -324,7 +324,7 @@ const App = () => {
         }
       });
     } else { //idfrom does not exist, idTo exists
-      console.log("key does not exist");
+      // console.log("key does not exist");
       nodeIndexCount[idFrom] = nodeIndexCount.count; 
       nodeIndexCount.count += 1;
       const intIdFrom = nodeIndexCount[idFrom]
@@ -355,8 +355,8 @@ const App = () => {
   const plotPeers = () => {
     // console.log(edges)
     Object.values(edges).forEach((edge) => {
-      console.log("suhhhhh: edge: ", edge)
-      console.log("edge", edge[0], edge[1])
+      // console.log("suhhhhh: edge: ", edge)
+      // console.log("edge", edge[0], edge[1])
       // let nodeId = createGossipInstance(311, -211, edge[0], prevNode)
       let nodeId = createGossipConnection(311, -211, edge[0], edge[1])
       // let nodeId = createGossipConnection(311, -211, 0, 1)
@@ -426,10 +426,10 @@ const App = () => {
   const { graph, events } = state;
 
   const renderConnections = () => {
-    console.log('connecrtions', connections)
+    // console.log('connecrtions', connections)
     const divs = []
     Object.keys(connections).forEach((key) => {
-      console.log('herEEEEE', key, connections[key])
+      // console.log('herEEEEE', key, connections[key])
       // divs.push(<div>{key} : {connections[key]}) </div>)
       return <div> {key} : {connections[key].forEach((val) => {
         // console.log(val)
