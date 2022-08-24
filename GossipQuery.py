@@ -130,4 +130,5 @@ class GossipQuery():
         for point in points:
             # print(point)
             result.append(point)
-        return result
+
+        return sorted(result, key=lambda x: x["timestamp_at_host"])
