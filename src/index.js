@@ -306,7 +306,7 @@ const App = () => {
   const [renderDivs, setRenderDivs] = useState(false)
   
   const renderMessageResults = () => {
-    console.log("in redner divs")
+    if (renderDivs) {
       const divs = []
       divs.push(<div>Cluster Connections: </div>);
       divs.push(<div>Signature: {signature} <br /> fromHost: {originatingHost}</div>);
@@ -332,6 +332,7 @@ const App = () => {
 
       })
       return divs;
+    }
   }
 
 
@@ -386,6 +387,9 @@ const App = () => {
       
       <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
       
+      <p>
+        Track Messages below by message signature and originating host!
+      </p>
       <div>
         <form onSubmit={handleSubmit}>
           <label>
