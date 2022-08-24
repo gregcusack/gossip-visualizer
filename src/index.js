@@ -308,8 +308,9 @@ const App = () => {
   const renderMessageResults = () => {
     if (renderDivs) {
       const divs = []
-      divs.push(<div>Cluster Connections: </div>);
-      divs.push(<div>Signature: {signature} <br /> fromHost: {originatingHost}</div>);
+      divs.push(<div><p>Cluster Connections: </p></div>);
+      divs.push(<div><p>Message Signature: {signature} <br /> Host pubkey that created the message: {originatingHost}</p></div>);
+
       Object.keys(messageResults).forEach((key) => {
         console.log('message: ', messageResults[key])
 
@@ -331,6 +332,7 @@ const App = () => {
         divs.push(<div>{ts} : {current_host}</div>);
 
       })
+      divs.push(<p></p>)
       return divs;
     }
   }
@@ -388,7 +390,7 @@ const App = () => {
       <button onClick={plotPeers}>PRESS TO PLOT PEERS</button>
       
       <p>
-        Track Messages below by message signature and originating host!
+        Track Gossip Messages below by message signature and originating host!
       </p>
       <div>
         <form onSubmit={handleSubmit}>
@@ -397,6 +399,7 @@ const App = () => {
             <input 
               type="text" 
               required
+              style={{width: "750px"}}
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
             />
@@ -407,6 +410,7 @@ const App = () => {
             <input 
               type="text" 
               required
+              style={{width: "370px"}}
               value={originatingHost}
               onChange={(e) => setOriginatingHost(e.target.value)}
             />
