@@ -21,14 +21,14 @@ def read_root():
 
 @app.get("/query-connections/{t0}/{t1}")
 def run_connection_query(t0: str, t1: str):
-    gossip_query = GossipQuery("connections")
+    gossip_query = GossipQuery("web", "connections")
     conn_components, edges = gossip_query.query(t0, t1)
     # conn_components, edges = connections_query(t0, t1)
     return {"connected_components" : conn_components, "edges": edges}
 
 @app.get("/query-messages/{signature}/{source}")
 def run_messages_query(signature: str, source: str):
-    gossip_query = GossipQuery("messages")
+    gossip_query = GossipQuery("web", "messages")
     return gossip_query.query(signature, source)
 
 
@@ -46,13 +46,13 @@ if __name__ == '__main__':
     if sys.argv[1] == "connections":
         t0 = sys.argv[2]
         t1 = sys.argv[3]
-        gossip_query = GossipQuery(sys.argv[1])
+        gossip_query = GossipQuery("local", sys.argv[1])
         gossip_query.query(t0, t1)
 
     elif sys.argv[1] == "messages":
         signature = sys.argv[2]
         source = sys.argv[3]
-        gossip_query = GossipQuery(sys.argv[1])
+        gossip_query = GossipQuery("local", sys.argv[1])
         gossip_query.query(signature, source)
     else:
         print("ERROR: need \"connections <start ts> <end ts>\" OR \" messages <msg siganture> <source pubkey>\"")
