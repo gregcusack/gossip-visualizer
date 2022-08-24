@@ -4,10 +4,8 @@ import ReactDOM from "react-dom";
 import axios from 'axios'
 // import DateTimePicker from 'react-datetime-picker'
 import DateTimeRangePicker from '@wojtekmaj/react-datetimerange-picker';
-import { consoleLogger } from "@influxdata/influxdb-client";
 const Influx = require('influx')
 // const influx = new Influx.InfluxDB('http://read:read@localhost:8087/database')
-const influx = new Influx.InfluxDB('http://read:read@localhost:8087/gossipDb')
 // axios({ url: "test", baseURL: "http://localhost:8000" });
 axios.defaults.baseURL = 'http://localhost:8000';
 
@@ -59,7 +57,6 @@ const App = () => {
   const [connections, setConnections] = useState({});
   const [edges, setEdges] = useState({});
   const [nodeKeys, setNodeKeys] = useState({});
-  const [createInstances, setCreateInstances] = useState(false);
   const [nodeIndexCount, setNodeIndexCount] = useState({
     count: 6,
   });
@@ -185,7 +182,6 @@ const App = () => {
         }
       });
     } else { //idfrom does not exist, idTo exists
-      // console.log("key does not exist");
       nodeIndexCount[idFrom] = nodeIndexCount.count; 
       nodeIndexCount.count += 1;
       const intIdFrom = nodeIndexCount[idFrom]
@@ -210,7 +206,6 @@ const App = () => {
       });
     }
     
-    // return id;
   }
 
   const plotPeers = () => {
@@ -218,17 +213,6 @@ const App = () => {
       createGossipConnection(311, -211, edge[0], edge[1])
     })
   }
-
-  // useEffect(() => {
-  //   console.log("what up yoo");
-  //   network.setOptions({ physics: false }); // Disable physics after stabilization
-  //   network.fit();
-  //   // if (network) { // Network will be set using getNetwork event from the Graph component
-      
-  //   // }
-    
-  //   // const createGossipConnection()
-  // }, [network]);
 
   const [state, setState] = useState({
     counter: 5,
@@ -260,33 +244,22 @@ const App = () => {
   const { graph, events } = state;
 
   const renderConnections = () => {
-    // console.log('connecrtions', connections)
     const divs = []
     Object.keys(connections).forEach((key) => {
-      // console.log('herEEEEE', key, connections[key])
-      // divs.push(<div>{key} : {connections[key]}) </div>)
       return <div> {key} : {connections[key].forEach((val) => {
-        // console.log(val)
-        // return <div>{val}, </div>
         divs.push(<div>{key} : {val}</div>) 
       })} </div>
     })
-    // console.log('divs connections', divs)
     return divs
   }
 
   const renderEdges = () => {
     const divs = []
     Object.keys(edges).forEach((key) => {
-      // console.log('edges', edges[key])
-      // divs.push(<div>{key} : {connections[key]}) </div>)
       return <div> {edges[key].forEach((val) => {
-        // console.log(val)
-        // return <div>{val}, </div>
         divs.push(<div>{val}</div>) 
       })} </div>
     })
-    // console.log('divs edges', divs)
     return divs
   }
 
@@ -312,8 +285,6 @@ const App = () => {
       divs.push(<div><p>Message Signature: {signature} <br /> Host pubkey that created the message: {originatingHost}</p></div>);
 
       Object.keys(messageResults).forEach((key) => {
-        console.log('message: ', messageResults[key])
-
         const current_host = messageResults[key].current_host;
         const ts = Intl.DateTimeFormat('en-US', {
           year: 'numeric', 
@@ -340,9 +311,6 @@ const App = () => {
 
   useEffect(() => {
     if(isMounted.current) {
-      console.log("sig: ", message.signature);
-      console.log("host: ", message.originatingHost);
-
       const fetchData = async () => {
         const sig = message.signature;
         const host = message.originatingHost;
@@ -351,13 +319,7 @@ const App = () => {
         const res = await axios.get(queryString)
         console.log("query res: ", res.data);
         setMessageResults(res.data)
-        // renderDivs.current = true;
         setRenderDivs(true)
-        // renderMessageResults(res.data)
-
-
-
-
       }
       fetchData()
         .catch(console.error)
@@ -384,6 +346,9 @@ const App = () => {
         />
       </div>
       {<div>Cluster Connections: {renderConnections()}</div>}
+      {/* <div>
+        {<button onClick={renderEdges}>PRESS TO SHOW ALL EDGES</button>}
+      </div> */}
       {/* {<div>{renderEdges()}</div>} */}
 
       
@@ -416,7 +381,6 @@ const App = () => {
             />
           </label>
           <button>Search</button>
-          {/* <p>{signature}, {originatingHost}</p> */}
         </form>
       </div>
       <div>
