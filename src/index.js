@@ -272,8 +272,8 @@ const App = () => {
     originatingHost: ''
   });
   
-  const [signature, setSignature] = useState('2FNSB73ay8WCVp4Ua7VEWnsSEWXLEF56FxjUBpDGgFat26vQvzdU2C7MwAu7XNXhTTUyFS11bWW713fXepHpaQBj');
-  const [originatingHost, setOriginatingHost] = useState('2bFNkyX9Sb6vCeYwdnrN4ViK77pe3Br5xRXS6GyKkQYH');
+  const [signature, setSignature] = useState('25sQQKDnd32x3oCqWjZ1whCVSYkaRiZLiagcLGVVzDEcfSK1EALgMdSzW6BeLZRpPYBtWGccPSfnv1TFFrtxv5W7');
+  const [originatingHost, setOriginatingHost] = useState('88F7T3jBVvWgn1Y8r8yZ7rrAwtW34EJf5GJRYdyfAkgn');
 
   const [messageResults, setMessageResults] = useState({});
   const [renderDivs, setRenderDivs] = useState(false)
@@ -285,23 +285,7 @@ const App = () => {
       divs.push(<div><p>Message Signature: {signature} <br /> Host pubkey that created the message: {originatingHost}</p></div>);
 
       Object.keys(messageResults).forEach((key) => {
-        const current_host = messageResults[key].current_host;
-        const ts = Intl.DateTimeFormat('en-US', {
-          year: 'numeric', 
-          month: '2-digit', 
-          day: '2-digit', 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          second: '2-digit', 
-          fractionalSecondDigits: 3, 
-          hour12: false
-        }).format(messageResults[key].timestamp_at_host)
-        
-        console.log(ts)
-        console.log(current_host)
-
-        divs.push(<div>{ts} : {current_host}</div>);
-
+        divs.push(<div>{messageResults[key].timestamp_at_host} : {messageResults[key].current_host}</div>);
       })
       divs.push(<p></p>)
       return divs;
