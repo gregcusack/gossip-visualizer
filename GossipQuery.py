@@ -12,8 +12,10 @@ class GossipQuery():
     def __init__(self, location, query_type):
         self.location = location
         self.query_type = query_type
-        self.client = InfluxDBClient(host='localhost', port=8087)
-        self.client.switch_database('gossipDb')
+        # self.client = InfluxDBClient(host='localhost', port=8087)
+        # self.client.switch_database('gossipDb')
+        self.client = InfluxDBClient(database="testnet-dev-greg", username="gcusack", password="nZpypzlcGA", host='internal-metrics.solana.com', ssl=True, verify_ssl=True, port=8086)        
+        # self.client.switch_database('testnet-dev-greg')
         self.points = None
         self.result = None
 
