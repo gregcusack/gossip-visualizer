@@ -7,7 +7,7 @@ from Graph import Graph_struct
 from dotenv import load_dotenv
 import os
 
-class GossipQuery():
+class GossipQueryInflux():
     def __init__(self, location, query_type):
         self.location = location
         self.query_type = query_type
@@ -67,7 +67,7 @@ class GossipQuery():
         return self.parse_result()
 
     def execute_connections_query(self, t0, t1):
-        timerange = GossipQuery.convertFromLocaltoUTC(self.location, t0,t1)
+        timerange = GossipQueryInflux.convertFromLocaltoUTC(self.location, t0,t1)
         # query_string = 'SELECT time, host, peers FROM "gossip-peers"'
 
         query_string = 'SELECT time, host, peers FROM "gossip-peers" \
