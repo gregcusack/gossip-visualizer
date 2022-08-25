@@ -4,18 +4,21 @@ import pytz
 from bidict import bidict
 import sys
 from Graph import Graph_struct
-
-
-
+from dotenv import load_dotenv
+import os
 
 class GossipQuery():
     def __init__(self, location, query_type):
         self.location = location
         self.query_type = query_type
-        # self.client = InfluxDBClient(host='localhost', port=8087)
-        # self.client.switch_database('gossipDb')
-        self.client = InfluxDBClient(database="testnet-dev-greg", username="gcusack", password="nZpypzlcGA", host='internal-metrics.solana.com', ssl=True, verify_ssl=True, port=8086)        
-        # self.client.switch_database('testnet-dev-greg')
+        load_dotenv()
+
+        database = os.getenv("GOSSIP_INFLUXDB_NAME")
+        username = os.getenv("GOSSIP_INFLUX_USERNAME")
+        password = os.getenv("GOSSIP_INFLUX_PASSWORD")
+        host = os.getenv("GOSSIP_INFLUX_HOST")
+        port = os.getenv("GOSSIP_INFLUX_PORT")
+        self.client = InfluxDBClient(database=database, username=username, password=password, host=host, ssl=True, verify_ssl=True, port=port)        
         self.points = None
         self.result = None
 
