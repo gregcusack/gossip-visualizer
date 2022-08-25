@@ -145,6 +145,7 @@ Same issue as above, I wanted to set this as a flag but I never got to it.
 cd solana
 ```
 Depending if you want metrics or not, checkout either `gossip-only-gce-influx` or `gossip-only-gce`
+If you want metrics, you still have to set the environment variables (see above)!
 
 Create N accounts files with default stakes
 ```
