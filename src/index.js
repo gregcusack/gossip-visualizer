@@ -272,8 +272,8 @@ const App = () => {
     originatingHost: ''
   });
   
-  const [signature, setSignature] = useState('25sQQKDnd32x3oCqWjZ1whCVSYkaRiZLiagcLGVVzDEcfSK1EALgMdSzW6BeLZRpPYBtWGccPSfnv1TFFrtxv5W7');
-  const [originatingHost, setOriginatingHost] = useState('88F7T3jBVvWgn1Y8r8yZ7rrAwtW34EJf5GJRYdyfAkgn');
+  const [signature, setSignature] = useState('3y9Cx7m8KjA6nr2K6UzSwewVTdpmdB4DSomkV1bpLSRNdrME6QevQmK38QSmKAS4ciNMDKztkFvuhvEk5dQ1ihWF');
+  const [originatingHost, setOriginatingHost] = useState('9qWd7mp1rHYNp57JKwc23jzCCdCcMqySPHPXDKTYeX3Q');
 
   const [messageResults, setMessageResults] = useState({});
   const [renderDivs, setRenderDivs] = useState(false)
