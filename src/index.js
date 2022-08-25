@@ -281,7 +281,6 @@ const App = () => {
   const renderMessageResults = () => {
     if (renderDivs) {
       const divs = []
-      divs.push(<div><p>Cluster Connections: </p></div>);
       divs.push(<div><p>Message Signature: {signature} <br /> Host pubkey that created the message: {originatingHost}</p></div>);
 
       Object.keys(messageResults).forEach((key) => {
