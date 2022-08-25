@@ -282,6 +282,7 @@ const App = () => {
     if (renderDivs) {
       const divs = []
       divs.push(<div><p>Message Signature: {signature} <br /> Host pubkey that created the message: {originatingHost}</p></div>);
+      divs.push(<div>Timestamp &emsp; &emsp; &emsp;&emsp;&emsp;&emsp;&emsp; Pubkey of host message is currently at</div>);
 
       Object.keys(messageResults).forEach((key) => {
         divs.push(<div>{messageResults[key].timestamp_at_host} : {messageResults[key].current_host}</div>);
