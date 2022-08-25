@@ -136,8 +136,8 @@ class GossipQuery():
         # sort first and then trim to ensure they are in order
         sorted_dicts = sorted(result, key=lambda x: x["timestamp_at_host"])
         for d in sorted_dicts:
-            d.update((k, datetime.utcfromtimestamp(v/1000/1000).strftime("%Y-%m-%d, %H:%M:%S.%f")) for k, v in d.items() if k == "timestamp_at_host")
-        
+            d.update((k, datetime.fromtimestamp(v/1000/1000).strftime("%Y-%m-%d, %H:%M:%S.%f")) for k, v in d.items() if k == "timestamp_at_host")
+
         return sorted_dicts
 
         # return 
