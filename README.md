@@ -2,7 +2,7 @@
 
 
 # Solana Gossip Protocol Visualizer
-![alt text](https://github.com/gregcusack/gossip-visualizer/Solana-Gossip-Visualizer-Arch.png?raw=true)
+![alt text](Solana-Gossip-Visualizer-Arch.png)
 
 ```
 npm start
