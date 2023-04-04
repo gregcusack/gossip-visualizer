@@ -18,7 +18,9 @@ class GossipQueryInflux():
         password = os.getenv("GOSSIP_INFLUX_PASSWORD")
         host = os.getenv("GOSSIP_INFLUX_HOST")
         port = os.getenv("GOSSIP_INFLUX_PORT")
-        self.client = InfluxDBClient(database=database, username=username, password=password, host=host, ssl=True, verify_ssl=True, port=port)        
+        print(port, host)
+        # self.client = InfluxDBClient(database=database, username=username, password=password, host=host, ssl=True, verify_ssl=True, port=port)   
+        self.client = InfluxDBClient(database=database, host=host, port=port)             
         self.points = None
         self.result = None
 
