@@ -75,12 +75,12 @@ Run Gossip Only across the GCP nodes
 Option 1: Deploy a specific number of gossip instances per GCP node
 ```
 cd ../net
-./net.sh gossip-only --gossip-instances-per-node <number-of-gossip-instances-per-node>
+./net.sh gossip-sim --gossip-instances-per-node <number-of-gossip-instances-per-node>
 ```
 
 Option 2: Deploy a total number of gossip instances evenly distributed across all GCP nodes. Deployed round-robin like
 ```
-./net.sh gossip-only --gossip-instances <number-of-gossip-instances>
+./net.sh gossip-sim --gossip-instances <number-of-gossip-instances>
 ```
 
 Note: If you deploy a large number of gossip instances like > 200 when setting `--gossip-instances`, sometimes it doesn't deploy all 200. It will deploy like ~185. I tried to figure out why, but couldn't figure it out in a reasinable amount of time. I haven't seen this issue with `--gossip-instances-per-node`
@@ -140,7 +140,7 @@ let _ = self.run_gossip(
 ```
 Same issue as above, I wanted to set this as a flag but I never got to it.
 
-## Running Gossip-Only Locally
+## Running Gossip-Sim Locally
 ```
 cd solana
 ```
@@ -149,15 +149,44 @@ If you want metrics, you still have to set the environment variables (see above)
 
 Create N accounts files with default stakes
 ```
-cargo run --bin gossip-only -- --write-keys --num-keys N --account-file accounts.yaml
+cargo run --bin gossip-sim -- --write-keys --num-keys N --account-file accounts.yaml
 ```
 
 Run bootstrap gossip instance:
 ```
-cargo run --bin gossip-only -- --bootstrap --account-file ./accounts.yaml --num-nodes 1 --entrypoint $(hostname -i):<entry-port> --shred-version <shred-version> --gossip-host $(hostname -i) --gossip-port <entry-port>
+cargo run --bin gossip-sim -- --bootstrap --account-file ./accounts.yaml --num-nodes 1 --entrypoint $(hostname -i):<entry-port> --shred-version <shred-version> --gossip-host $(hostname -i) --gossip-port <entry-port>
 ```
 
 Run N number of gossip instances to connect to the bootstrap instance
 ```
-cargo run --bin gossip-only -- --account-file ./accounts.yaml --num-nodes <N-1> --entrypoint $(hostname -i):<entry-port> --shred-version <shred-version> --gossip-host $(hostname -i)
+cargo run --bin gossip-sim -- --account-file ./accounts.yaml --num-nodes <N-1> --entrypoint $(hostname -i):<entry-port> --shred-version <shred-version> --gossip-host $(hostname -i)
+```
+
+
+# Update 4/4/23
+
+For local test (multiple instances on one gcp machine)
+- Forward port to localhost: 
+```
+gcloud compute ssh --zone "us-west1-b" --ssh-flag="-L <laptop-port>:localhost:<influx-port-likely-8086>" "greg-gossip-deployer-v3" --project "principal-lane-200702"
+```
+
+
+
+Login to remote influx:
+```
+influx -host internal-metrics.solana.com -port 8086 -username $INFLUX_USERNAME -password $INFLUX_PASSWORD -ssl -precision rfc3339
+```
+
+For remote test:
+On control node:
+```
+export GOSSIP_INFLUX_USERNAME="<username>"
+export GOSSIP_INFLUX_PASSWORD="<password>"
+export GOSSIP_INFLUXDB_NAME="<table-name>"
+```
+```
+export INFLUX_USERNAME="<username>"
+export INFLUX_PASSWORD="<password>"
+export INFLUX_DATABASE_="<table-name>"
 ```
